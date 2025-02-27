@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Ordering System</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        header { display: flex; justify-content: space-between; align-items: center; background: black; padding: 15px; color: white; }
+        nav { display: flex; }
+        .tab { background: #eee; border: none; padding: 10px; cursor: pointer; margin: 0 5px; }
+        .tab.active { background: orange; }
+        .cart { width: 25%; padding: 20px; background: white; }
+        .menu { display: flex; flex-wrap: wrap; gap: 15px; padding: 20px; }
+        .item { background: white; padding: 10px; border-radius: 5px; text-align: center; width: 180px; }
+        .item img { width: 100px; height: 100px; object-fit: cover; }
+        button { background: green; color: white; border: none; padding: 10px; cursor: pointer; }
+        .remove-btn { background: red; padding: 5px; margin-left: 10px; }
+        .quantity-btn { background: blue; padding: 5px; margin: 0 5px; }
+        .clear-btn { background: gray; margin-top: 10px; }
+        footer { background: black; color: white; text-align: center; padding: 10px; position: fixed; width: 100%; bottom: 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">CUISINE</div>
+        <nav>
+            <button class="tab active" data-category="all">All</button>
+            <button class="tab" data-category="veg">Veg Appetizers</button>
+            <button class="tab" data-category="nonveg">Non-Veg Appetizers</button>
+            <button class="tab" data-category="biryani">Biryani</button>
+        </nav>
+    </header>
+    
+    <main style="display: flex;">
+        <aside class="cart">
+            <h2>Selected Items</h2>
+            <label>Select Table:</label>
+            <select id="tableSelect">
+                <option value="">Select a table</option>
+                <option value="1">Table 1</option>
+                <option value="2">Table 2</option>
+            </select>
+            <div id="cartItems"></div>
+            <h3>Total: ₹<span id="total">0</span></h3>
+            <button id="submitOrder">Submit Order</button>
+            <button id="clearCart" class="clear-btn">Clear Cart</button>
+        </aside>
+        
+        <section class="menu" id="menu"></section>
+    </main>
+    
+    <script>
+            const menuItems = [
+            { name: "Manchuria", price: 120, category: "veg", image: "https://rasamayifoods.com/wp-content/uploads/2017/12/Veg-Manchuria.jpg" },
+            { name: "Paneer Masala", price: 160, category: "veg", image: "https://static.vecteezy.com/system/resources/previews/030/323/043/non_2x/delicious-paneer-bater-masala-dish-in-an-indian-restaurant-generative-ai-photo.jpg" },
+            { name: "Chicken Noodles", price: 100, category: "nonveg", image: "https://sinfullyspicy.com/wp-content/uploads/2023/01/1200-by-1200-images-5.jpg" },
+            { name: "Veg Rolls", price: 50, category: "veg", image: "https://manjulaskitchen.com/wp-content/uploads/vegetable_kathi_roll.jpg" },
+            { name: "Samosa", price: 25, category: "veg", image: "https://www.indianhealthyrecipes.com/wp-content/uploads/2021/12/samosa-recipe.jpg" },
+            { name: "Gobi 65", price: 60, category: "veg", image: "https://easyindiancookbook.com/wp-content/uploads/2022/12/gobi-65-recipe-1.jpg" },
+            { name: "Paneer biryani", price: 499, category: "biryani", image: "https://www.indianhealthyrecipes.com/wp-content/uploads/2023/02/paneer-biryani-recipe.jpg" },
+            { name: "Chicken Biryani", price: 599, category: "biryani", image: "https://www.chefkunalkapur.com/wp-content/uploads/2021/12/chicken-dum-biryani--scaled-e1643714086288-1300x834.jpg?v=1643713987.jpg" }
+        ];
+
+        const menuContainer = document.getElementById("menu");
+        const cartContainer = document.getElementById("cartItems");
+        const totalElement = document.getElementById("total");
+        const submitOrderButton = document.getElementById("submitOrder");
+        const clearCartButton = document.getElementById("clearCart");
+
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        function renderMenu(category = "all") {
+            menuContainer.innerHTML = "";
+            menuItems.forEach(item => {
+                if (category === "all" || item.category === category) {
+                    const menuItem = document.createElement("div");
+                    menuItem.classList.add("item");
+                    menuItem.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}">
+                        <p>${item.name}</p>
+                        <p>₹${item.price}</p>
+                        <button onclick="addToCart('${item.name}', ${item.price})">Add</button>
+                    `;
+                    menuContainer.appendChild(menuItem);
+                }
+            });
+        }
+
+        function addToCart(name, price) {
+            const existingItem = cart.find(item => item.name === name);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+            updateCart();
+        }
+
+        function updateCart() {
+            cartContainer.innerHTML = "";
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.price * item.quantity;
+                const cartItem = document.createElement("div");
+                cartItem.innerHTML = `
+                    <p>${item.name} - ₹${item.price} x ${item.quantity}
+                    <button class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</button>
+                    <button class="quantity-btn" onclick="changeQuantity(${index}, -1)">-</button>
+                    <button class="remove-btn" onclick="removeFromCart(${index})">X</button></p>
+                `;
+                cartContainer.appendChild(cartItem);
+            });
+            totalElement.innerText = total;
+            localStorage.setItem("cart", JSON.stringify(cart));
+        }
+
+        function changeQuantity(index, change) {
+            cart[index].quantity += change;
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            updateCart();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCart();
+        }
+
+        submitOrderButton.addEventListener("click", () => {
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
+            const table = document.getElementById("tableSelect").value;
+            if (!table) {
+                alert("Please select a table before submitting the order.");
+                return;
+            }
+            alert(`Order placed successfully for Table ${table}!`);
+            clearCart();
+        });
+
+        clearCartButton.addEventListener("click", clearCart);
+
+        renderMenu();
+        updateCart();
+    </script>
+</body>
+<footer>
+    &copy; Un-Limited Multi Cuisine. All Rights Reserved.
+</footer>
+</html>
