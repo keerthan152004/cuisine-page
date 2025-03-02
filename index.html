@@ -26,9 +26,9 @@
         <div class="logo">CUISINE</div>
         <nav>
             <button class="tab active" data-category="all">All</button>
-            <button class="tab" data-category="veg">Veg Appetizers</button>
-            <button class="tab" data-category="nonveg">Non-Veg Appetizers</button>
-            <button class="tab" data-category="biryani">Biryani</button>
+            <button class="tab active" data-category="veg">Veg Appetizers</button>
+            <button class="tab active" data-category="nonveg">Non-Veg Appetizers</button>
+            <button class="tab active" data-category="biryani">Biryani</button>
         </nav>
     </header>
     
@@ -51,25 +51,26 @@
     </main>
     
     <script>
-            const menuItems = [
+        const menuItems = [
             { name: "Manchuria", price: 120, category: "veg", image: "https://rasamayifoods.com/wp-content/uploads/2017/12/Veg-Manchuria.jpg" },
             { name: "Paneer Masala", price: 160, category: "veg", image: "https://static.vecteezy.com/system/resources/previews/030/323/043/non_2x/delicious-paneer-bater-masala-dish-in-an-indian-restaurant-generative-ai-photo.jpg" },
             { name: "Chicken Noodles", price: 100, category: "nonveg", image: "https://sinfullyspicy.com/wp-content/uploads/2023/01/1200-by-1200-images-5.jpg" },
             { name: "Veg Rolls", price: 50, category: "veg", image: "https://manjulaskitchen.com/wp-content/uploads/vegetable_kathi_roll.jpg" },
             { name: "Samosa", price: 25, category: "veg", image: "https://www.indianhealthyrecipes.com/wp-content/uploads/2021/12/samosa-recipe.jpg" },
             { name: "Gobi 65", price: 60, category: "veg", image: "https://easyindiancookbook.com/wp-content/uploads/2022/12/gobi-65-recipe-1.jpg" },
-            { name: "Paneer biryani", price: 499, category: "biryani", image: "https://www.indianhealthyrecipes.com/wp-content/uploads/2023/02/paneer-biryani-recipe.jpg" },
+            { name: "Paneer Biryani", price: 499, category: "biryani", image: "https://www.indianhealthyrecipes.com/wp-content/uploads/2023/02/paneer-biryani-recipe.jpg" },
             { name: "Chicken Biryani", price: 599, category: "biryani", image: "https://www.chefkunalkapur.com/wp-content/uploads/2021/12/chicken-dum-biryani--scaled-e1643714086288-1300x834.jpg?v=1643713987.jpg" }
         ];
-
+    
         const menuContainer = document.getElementById("menu");
         const cartContainer = document.getElementById("cartItems");
         const totalElement = document.getElementById("total");
         const submitOrderButton = document.getElementById("submitOrder");
         const clearCartButton = document.getElementById("clearCart");
-
+    
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
+    
+        
         function renderMenu(category = "all") {
             menuContainer.innerHTML = "";
             menuItems.forEach(item => {
@@ -86,7 +87,7 @@
                 }
             });
         }
-
+    
         function addToCart(name, price) {
             const existingItem = cart.find(item => item.name === name);
             if (existingItem) {
@@ -96,7 +97,7 @@
             }
             updateCart();
         }
-
+    
         function updateCart() {
             cartContainer.innerHTML = "";
             let total = 0;
@@ -114,7 +115,7 @@
             totalElement.innerText = total;
             localStorage.setItem("cart", JSON.stringify(cart));
         }
-
+    
         function changeQuantity(index, change) {
             cart[index].quantity += change;
             if (cart[index].quantity <= 0) {
@@ -122,17 +123,17 @@
             }
             updateCart();
         }
-
+    
         function removeFromCart(index) {
             cart.splice(index, 1);
             updateCart();
         }
-
+    
         function clearCart() {
             cart = [];
             updateCart();
         }
-
+    
         submitOrderButton.addEventListener("click", () => {
             if (cart.length === 0) {
                 alert("Your cart is empty!");
@@ -146,12 +147,23 @@
             alert(`Order placed successfully for Table ${table}!`);
             clearCart();
         });
-
+    
         clearCartButton.addEventListener("click", clearCart);
-
-        renderMenu();
+    
+       
+        document.querySelectorAll(".tab").forEach(button => {
+            button.addEventListener("click", function () {
+                const category = this.getAttribute("data-category");
+                renderMenu(category);
+            });
+        });
+    
+       
+        renderMenu("all");
         updateCart();
     </script>
+
+
 </body>
 <footer>
     &copy; Un-Limited Multi Cuisine. All Rights Reserved.
